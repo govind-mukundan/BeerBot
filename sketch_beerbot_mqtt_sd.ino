@@ -69,7 +69,7 @@ Other Notes:
  
  */
 
-#define DEBUGGING (1)  // make 0 before release
+#define DEBUGGING (0)  // make 0 before release
 // GPIO defs
 #define SD_CS_PIN    (4) // SD SS is pin 4 on the wifi sheild
 #define WiFi_CS_PIN    (10) 
@@ -191,7 +191,7 @@ void beerBotInit(void)
 
   // put your setup code here, to run once:
   Serial.begin(9600);
-  //delay(20000);
+  delay(5000); // A 5s delay 
   #if (DEBUGGING == 1)
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
