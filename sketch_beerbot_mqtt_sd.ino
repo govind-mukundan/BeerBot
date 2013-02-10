@@ -80,7 +80,7 @@ Other Notes:
 #define API_KEY "8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g" // beerbot Cosm API key
 #define FEED_ID 82941 // beerbot Cosm feed ID
 #define COSM_SUBSCRIBE_STRING  "/v1/feeds/82941/datastreams/0.csv"
-#define C_INITIAL_FEEDS_TO_IGNORE  (2)
+#define C_INITIAL_FEEDS_TO_IGNORE  (0)
 #define C_SERVER "api.cosm.com"
 #define C_CosmON_BLINK_RATE          (1000ul)
 #define C_SSID_MAX_LEN      (20)
@@ -257,6 +257,7 @@ void BeerBotTask(void)
 
       Serial.println("Subs to feed");
       if(true== client.subscribe(COSM_SUBSCRIBE_STRING)){
+        
         CosmState = CosmSubscribed;
         Serial.print("OK");
         Serial.println(COSM_SUBSCRIBE_STRING);
@@ -325,9 +326,11 @@ void callback(char* topic, byte* payload, unsigned int length) {
       writeToEEPROM(C_EEPROM_APPROVALID_SIZE_ADDRESS, (char*)&length, 1);
       // Copying it into RAM for access in the current power cycle
       memcpy ( LastApprovalId, payload, length );
+      client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,1");
     }
     else{
       Serial.println("IDs are same, no beer for you");
+      client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,0");
     }
   } 
   else{
