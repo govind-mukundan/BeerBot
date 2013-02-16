@@ -1,104 +1,18 @@
 /*
 
-                      Description: INO for beerbot task #2 in Basecamp.
-                      Hardware: Arduino Leonardo
-                      Author: Govind Mukundan (govind.mukundan at gmail.com)
-                      Date: 12/Feb/2013
-                      Version: 1.1
-                      References: Basic intro to SM5100 -> http://tronixstuff.wordpress.com/tag/sm5100/
-                      History:
-                                1.1: First Version, tested at home without Bot using SINGTEL SIM card
-
- Hardware Notes:
- --> Power supply should be at least 5V, 2.5Ampere and must be given to the GSM Shield, NOT to the Arduino power jack.
- --> Ardiono should be powered from the 5V pin on the shield
- --> The Leonardo uses the USB port as the serial port, so pins (0,1) are free to use for the GSM shield (Serial1).
- --> However, the SMB Shield is by default configured to use pins (2,3) for UART, So you have to switch the Rx and Tx Jumpers on the board to use Serial1
- Once thats done, the shield should work directly
+ Description: INO for beerbot task #2 in Basecamp.
+ Hardware: Arduino Leonardo
+ Shields: SMS Shield -> https://www.sparkfun.com/products/9607
+          GLCD       -> https://www.sparkfun.com/products/710
+ Author: Govind Mukundan (govind dot mukundan at gmail dot com)
+ Date: 12/Feb/2013
+ Version: 1.2
+ References: Basic intro to SM5100 -> http://tronixstuff.wordpress.com/tag/sm5100/
+             Info about GLCD library and pinout --> http://playground.arduino.cc/Code/GLCDks0108
+ History:
+ 1.2: Integrated GLCD support, and tested with Starhub+Singtel SIMs
+ 1.1: First Version, tested at home without Bot using SINGTEL SIM card
  
- AT Command Notes:
- --- Frequency band -----
- Singtel uses GSM Band 900, This can be configured using:
- AT+SBAND=0\r\n
- Starhub aparrently uses GSM 1800
- AT+SBAND=9\r\n shoudl cover both??
- --- Status -----
- After powering on the Arduino with the shield installed, verify that the module reads and recognizes the SIM card.
- With a terimal window open and set to Arduino port and 9600 buad, power on the Arduino. The startup sequence should look something
- like this:
- 
- Starting SM5100B Communication...
- 
- +SIND: 1
- +SIND: 10,"SM",1,"FD",1,"LD",1,"MC",1,"RC",1,"ME",1
- 
- Communication with the module starts after the first line is displayed. The second line of communication, +SIND: 10, tells us if the module
- can see a SIM card. If the SIM card is detected every other field is a 1; if the SIM card is not detected every other field is a 0.
- 
- 3.) Wait for a network connection before you start sending commands. After the +SIND: 10 response the module will automatically start trying
- to connect to a network. Wait until you receive the following repsones:
- 
- +SIND: 11
- +SIND: 3
- +SIND: 4
- 
- The +SIND response from the cellular module tells the the modules status. Here's a quick run-down of the response meanings:
- 0 SIM card removed
- 1 SIM card inserted
- 2 Ring melody
- 3 AT module is partially ready
- 4 AT module is totally ready
- 5 ID of released calls
- 6 Released call whose ID=<idx>
- 7 The network service is available for an emergency call
- 8 The network is lost
- 9 Audio ON
- 10 Show the status of each phonebook after init phrase
- 11 Registered to network
- 
- After registering on the network you can begin interaction. Here are a few simple and useful commands to get started:
- 
- To make a call:
- AT command - ATDxxxyyyzzzz
- Phone number with the format: (xxx)yyy-zzz
- 
- If you make a phone call make sure to reference the devices datasheet to hook up a microphone and speaker to the shield.
- 
- To send a txt message:
- AT command - AT+CMGF=1
- This command sets the text message mode to 'text.'
- AT command = AT+CMGS="xxxyyyzzzz"(carriage return)'Text to send'(CTRL+Z)
- This command is slightly confusing to describe. The phone number, in the format (xxx)yyy-zzzz goes inside double quotations. Press 'enter' after closing the quotations.
- Next enter the text to be send. End the AT command by sending CTRL+Z (0x1A in ASCII)
- 
- --- Receiving SMS --------
- 
- AT+CMGF=1
- Which sets the SMS mode to text. The second command is:
- 
- AT+CNMI=3,3,0,0
- 
- This command tells the GSM module to immediately send any new SMS data to the serial out.
- 
- AT+CMGD=1,4 --> Deletes ALL SMSes
- 
- --- Read All/New SMS ---
- AT+CMGF=1
- AT+CMGL="ALL"
- 
----- Sent.ly API -----
-To send an SMS via Sent.ly using HTTP,
-1. Create an account
-2. Register an android phone
-3. Log into the phone app
-4. Use the foll HTTP GET syntax 
-https://sent.ly/command/sendsms?username=sent_ly_uname&password=sent_ly_pwd&to=%2b6596376447&text=%23AC:1360604509%26
-
---> The sender number will be the android phone runnung sent.ly
---> %23AC:1360604509%26, 0x23 and 0x26 are # and & in ASCII (URL Encoding) 
---> Note that the App on the phone MUST be running in order for the SMSes to be sent, if not you will get an error code "ERROR 3" on the browser
- 
- http://playground.arduino.cc/Main/Printf
  
  */
 
@@ -106,15 +20,18 @@ https://sent.ly/command/sendsms?username=sent_ly_uname&password=sent_ly_pwd&to=%
 #include <string.h>         //Used for string manipulations
 #include <ctype.h>
 #include <EEPROM.h>
+#include <glcd.h>
+#include "bitmaps/allBitmaps.h"       // all images in the bitmap dir
+#include "fonts/SystemFont5x7.h"       // system font
 
 #define SM_BUFFER_LEN  100
-#define DEBUGGING (1)  // make 0 before release
+#define DEBUGGING (0)  // make 0 before release
 
 #define C_EEPROM_APPROVALID_ADDRESS            (0x100)
 #define C_EEPROM_APPROVALID_SIZE_ADDRESS       (0x100 + 50u)
 
 #define C_APPROVAL_ID_LEN    (20)
-#define LED_PIN      (8) // On board LED at pin13 (L)
+#define LED_PIN      (3) // On board LED at pin13 (L)
 #define C_ERROR_BLINK_RATE          (1000ul)
 #define C_AUTHCODE_HEADER_BYTES    (3) // AC:
 
@@ -177,6 +94,52 @@ void SM500InitializeSMS(void);
 void SM5100ParseSms(void);
 
 
+// ------------------  Display Related Declerations ---------------
+#define BEERBOT_VERSION  1
+#define TIME_TEXT_DISP    5
+#define TIME_SPLASH_DISP    5000
+#define SPLASH_MSG1 "Maxus "
+#define SPLASH_MSG2 "Technology"
+#define VEND_MSG "Please Collect Your Beer"
+#define CONNECT_MSG "Connecting to GSM + WiFi ..."
+#define READY_MSG "READY!!!"
+#define EMPTY_LINE " "
+#define STATUS_GSM_NO_SIM "GSM : No SIM"
+#define STATUS_GSM_OK     "GSM : OK"
+#define STATUS_GSM_NOK    "GSM : NOK"
+#define STATUS_WiFi_OK    "WiFi: OK"
+#define STATUS_WiFi_NOK   "WiFi: NOK"
+#define STATUS_NET_OK     "WWW : OK"
+#define STATUS_NET_NOK    "WWW : NOK"
+#define STATUS_COSM_OK    "COSM: OK"
+#define STATUS_COSM_NOK   "COSM: NOK"
+#define STATUS_GSM  1
+#define STATUS_WiFi  2
+#define STATUS_NET  3
+#define STATUS_COSM  4
+
+typedef enum{
+  DispDummy,
+  DispConnecting,
+  DispError,
+  DispReady,
+  DispVending  
+} 
+e_DisplayStates;
+
+int glcdStatus;
+e_DisplayStates DispState;
+e_DisplayStates DispStatePrev;
+boolean updateDispStat;
+const char* statusGsm ;
+const char* statusWiFi ;
+const char* statusNet ;
+const char* statusCosm ;
+Image_t icon;
+gText textArea;              // a text area to be defined later in the sketch
+gText textAreaArray[3];      // an array of text areas  
+gText countdownArea =  gText(GLCD.CenterX, GLCD.CenterY,1,1,System5x7); // text area for countdown digits
+
 void setup()
 {
   //Initialize serial ports for communication.
@@ -195,14 +158,20 @@ void setup()
 
 void loop()
 {
-  SM5100RxTask();
-  SM5100StateMachine();
-  Blink();
-  // print the string when a newline arrives:
-  if (CmdComplete) {
-    SM5100ParseStatus();
-    BufferTail = 0;
-    CmdComplete = false;
+  spashScreen(); 
+  SM5100Reset(); //Reset the SM5100 module
+  delay(1000);
+  while(1){
+    SM5100RxTask();
+    SM5100StateMachine();
+    //Blink();
+    DispScreenUpdate();
+    // print the string when a newline arrives:
+    if (CmdComplete) {
+      SM5100ParseStatus();
+      BufferTail = 0;
+      CmdComplete = false;
+    }
   }
 
 }
@@ -262,18 +231,19 @@ void SM5100RxTask(void) {
 
   }
 }
+byte stat = SM_DUMMY;
 
 void SM5100ParseStatus(void)
 // Parses out the status message and sets the State
 //
 {
   // Parse out SIND status updates
-  byte stat = SM_DUMMY;
+
   Serial.println(F("Parsing Status..")); 
   if(strncmp(SMBuffer,"SIND:",5)==0) {
     if( isDigit(SMBuffer[5]) && isDigit(SMBuffer[6]) ) {
       char a[3] = {
-        SMBuffer[5],SMBuffer[6],'\0'                              };
+        SMBuffer[5],SMBuffer[6],'\0'                                                            };
       stat = atoi(a);
       SMBuffer[5] = '\0';
       SMBuffer[6] = '\0';
@@ -369,6 +339,11 @@ void SM5100StateMachine(void)
       SM5100State = SM5100Ready; // Attempt to restart..
       errorTimeStamp = millis();
       Serial.println(F("State:ERROR, trying to restart"));
+      DispState = DispError;
+      if(stat != SM_SIM_REMOVED)
+        updateDispStatus(STATUS_GSM,0);
+      else
+        updateDispStatus(STATUS_GSM,3); // No SIM
     }
     break;
 
@@ -380,24 +355,35 @@ void SM5100StateMachine(void)
 void SM500InitializeSMS(void)
 {
   // Set text mode
-  Serial1.flush();
+  Serial.println(F("Initial Config for SIM"));
+  while (Serial1.available() > 0) Serial1.read(); //clear bytes in Rx buffer -> flush() only clears tx buffer
   Serial1.println(F("AT+CMGF=1"));
   Serial.setTimeout(10000);
   Serial1.readBytesUntil('\n', SMBuffer, 15);
   if(strncmp(SMBuffer,"OK",2)==0){
     // OK from shield 
     Serial.println(F("Text Mode"));
-    Serial1.flush();
     Serial1.println(F("AT+CNMI=3,3,0,0"));
     delay(3000); // Let it process the command
     Serial.println(F("Deleting Messages in SIM"));
     Serial1.println(F("AT+CMGD=1,4"));
     Serial.println(F("Waiting for SMS"));
+    while (Serial1.available() > 0) Serial1.read();
     SM5100State = SM5100WForSms;
+    DispState = DispReady;
+    updateDispStatus(STATUS_GSM,1);
   }
   // reset sind buffer
   SMBuffer[5] = '\0';
   SMBuffer[6] = '\0';
+}
+
+void SM5100Reset(void)
+{
+  while (Serial1.available() > 0) Serial1.read();
+  Serial1.println(F("AT+CFUN=1,1"));  // reset the SMB and get the SIND
+  Serial1.flush();
+
 }
 
 boolean compareArrays(char* array1, char* array2, int length)
@@ -430,7 +416,9 @@ void SM5100ParseSms(void)
 
     if(approval){
       Serial.println(F("Beer Approved!, Vending.."));
-      vendBeer();
+      DispState = DispVending;
+      DispScreenUpdate();
+      //vendBeer(); -- > moved to display routine
       Serial.println(F("Writing ID into EEPROM"));
       // Store it into EEPROM
       writeToEEPROM(C_EEPROM_APPROVALID_ADDRESS, (char*)&SMBuffer[C_AUTHCODE_HEADER_BYTES], authCodeLen);
@@ -562,5 +550,224 @@ void SM5100LoopBack(void)
   }
 
 }
+
+
+// ----------- GLCD DISPLAY SECTION -----------------
+void updateDispStatus(byte type, byte value)
+// Call this to update the status message in Ready or Error States
+{
+  switch(type)
+  {
+  case STATUS_GSM:
+    switch(value)
+    {
+    case 0: 
+      statusGsm = STATUS_GSM_NOK; 
+      break;
+    case 1: 
+      statusGsm = STATUS_GSM_OK; 
+      break;
+    case 3: 
+      statusGsm = STATUS_GSM_NO_SIM; 
+      break;
+    }
+    break;
+  case STATUS_WiFi:
+    switch(value)
+    {
+    case 0: 
+      statusWiFi = STATUS_WiFi_NOK; 
+      break;
+    case 1: 
+      statusWiFi = STATUS_WiFi_OK; 
+      break;
+    }
+    break;
+
+  case STATUS_NET:
+    switch(value)
+    {
+    case 0: 
+      statusNet = STATUS_NET_NOK; 
+      break;
+    case 1: 
+      statusNet = STATUS_NET_OK; 
+      break;
+    }
+    break;
+  case STATUS_COSM:
+    switch(value)
+    {
+    case 0: 
+      statusCosm = STATUS_COSM_NOK; 
+      break;
+    case 1: 
+      statusCosm = STATUS_COSM_OK; 
+      break;
+    }
+    break;
+
+  }
+  updateDispStat = true;
+}
+
+void spashScreen(void)
+{
+  //  statusGsm = STATUS_GSM_NOK;
+  //  statusWiFi = STATUS_WiFi_NOK;
+  //  statusNet = STATUS_NET_NOK;
+  //  statusCosm = STATUS_COSM_NOK;
+
+  glcdStatus = GLCD.Init();   // initialise the library, non inverted writes pixels onto a clear screen
+  if(glcdStatus) // did the initialization fail?
+  {
+    Serial.println("GLCD initialization Failed: ");
+    Serial.println(" (status code: ");
+    Serial.print(glcdStatus);
+    Serial.println(')');
+    return;
+  }
+  GLCD.ClearScreen(); 
+  // Display title for some time
+  GLCD.SelectFont(System5x7); // you can also make your own fonts, see playground for details   
+  GLCD.CursorToXY(GLCD.Width/2 - 44, 3);
+  GLCD.print("BeerBot version");
+  GLCD.print(BEERBOT_VERSION, DEC);
+  GLCD.DrawRoundRect(8,0,GLCD.Width-19,17, 5);  // rounded rectangle around text area   
+  countdown(TIME_TEXT_DISP);  
+  GLCD.ClearScreen(); 
+  // Set up text area and welcome message
+  textArea.DefineArea(GLCD.CenterX, 0, GLCD.Right, GLCD.Bottom, SCROLL_UP); 
+  textArea.SelectFont(System5x7, BLACK);
+  textArea.CursorTo(0,0); 
+  textArea.println(EMPTY_LINE);
+  textArea.println("Brought to you by");
+  textArea.println(SPLASH_MSG1);
+  textArea.println(SPLASH_MSG2);
+  // start scribble
+  scribble(TIME_SPLASH_DISP);  // run for 5 seconds  
+  // move to status screen
+  DispState = DispConnecting;
+  DispStatePrev = DispDummy;
+  updateDispStatus(STATUS_GSM,0);
+  updateDispStatus(STATUS_WiFi,0);
+  updateDispStatus(STATUS_COSM,0);
+  updateDispStatus(STATUS_NET,0);
+  DispScreenUpdate(); //Force the screen to update
+}
+
+void DispScreenUpdate(void)
+// Call this periodically to update the screen based on events
+{
+  if(glcdStatus) 
+    return;
+  if(DispState != DispStatePrev){
+    switch(DispState)
+    {
+    case DispConnecting:
+      GLCD.ClearScreen();
+      icon = sync;  
+      GLCD.DrawBitmap(icon, 0,0); 
+      textArea.CursorTo(0,0);
+      textArea.println(EMPTY_LINE);
+      textArea.print(CONNECT_MSG);
+      break;
+
+    case DispReady:
+      GLCD.ClearScreen();
+      icon = beer_icon;  
+      GLCD.DrawBitmap(icon, 0,0); 
+      break;
+
+    case DispVending:
+      GLCD.ClearScreen();
+      GLCD.CursorToXY(GLCD.Width/2 - 44, 3);
+      GLCD.print("   Vending In  ");
+      GLCD.DrawRoundRect(8,0,GLCD.Width-19,17, 5);  // rounded rectangle around text area 
+      countdown(TIME_TEXT_DISP); 
+      GLCD.ClearScreen();
+      icon = explosion;  
+      GLCD.DrawBitmap(icon, 0,0);
+      textArea.CursorTo(0,0);
+      textArea.println(EMPTY_LINE);
+      textArea.print(VEND_MSG);
+      countdown(10);
+      GLCD.ClearScreen();
+      updateDispStatus(0,0); // Dummy update of status
+      break;
+
+    default:
+      GLCD.ClearScreen();
+      icon = error;  // the 32 pixel high icon
+      GLCD.DrawBitmap(icon, 0,0); //draw the bitmap at the given x,y position
+
+      break;
+
+    }
+    DispStatePrev = DispState;
+  }
+
+  if( (updateDispStat == true) && ((DispState == DispError) || (DispState == DispReady)) ){
+    textArea.ClearArea();
+    textArea.println(statusGsm);
+    textArea.println(statusWiFi);
+    textArea.println(statusNet);
+    textArea.println(statusCosm);
+    updateDispStat = false;
+  }
+
+  if(DispState == DispVending)
+    DispState = DispReady;
+}
+
+void countdown(int count){
+  while(count--){  // do countdown  
+    countdownArea.ClearArea(); 
+    countdownArea.print(count);
+    delay(1000);  
+  }  
+}
+
+/*
+ * scribble drawing routine adapted from TellyMate scribble Video sketch
+ * http://www.batsocks.co.uk/downloads/tms_scribble_001.pde
+ */
+void scribble( const unsigned int duration )
+{
+  const  float tick = 1/128.0;
+  float g_head_pos = 0.0;
+
+  for(unsigned long start = millis();  millis() - start < duration; )
+  {
+    g_head_pos += tick ;
+
+    float head = g_head_pos ;
+    float tail = head - (256 * tick) ;
+
+    // set the pixels at the 'head' of the line...
+    byte x = fn_x( head ) ;
+    byte y = fn_y( head ) ;
+    GLCD.SetDot( x , y , BLACK) ;
+
+    // clear the pixel at the 'tail' of the line...
+    x = fn_x( tail ) ;
+    y = fn_y( tail ) ;  
+    GLCD.SetDot( x , y , WHITE) ;
+  }
+}
+
+byte fn_x( float tick )
+{
+  return (byte)(GLCD.Width/4 + (GLCD.Width/4-1) * sin( tick * 1.8 ) * cos( tick * 3.2 )) ;
+}
+
+byte fn_y( float tick )
+{
+  return (byte)(GLCD.Height/2 + (GLCD.Height/2 -1) * cos( tick * 1.2 ) * sin( tick * 3.1 )) ;
+}
+
+
+
+
 
 
