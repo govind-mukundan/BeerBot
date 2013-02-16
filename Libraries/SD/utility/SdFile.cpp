@@ -20,6 +20,7 @@
 #include <SdFat.h>
 #include <avr/pgmspace.h>
 #include <Arduino.h>
+#define GOVIND_FILE_WRITE_ON 0
 //------------------------------------------------------------------------------
 // callback function for date/time
 void (*SdFile::dateTime_)(uint16_t* date, uint16_t* time) = NULL;
@@ -1122,6 +1123,7 @@ uint8_t SdFile::truncate(uint32_t length) {
  *
  */
 size_t SdFile::write(const void* buf, uint16_t nbyte) {
+#if (GOVIND_FILE_WRITE_ON ==1)
   // convert void* to uint8_t*  -  must be before goto statements
   const uint8_t* src = reinterpret_cast<const uint8_t*>(buf);
 
@@ -1212,6 +1214,7 @@ size_t SdFile::write(const void* buf, uint16_t nbyte) {
   // return for write error
   //writeError = true;
   setWriteError();
+#endif
   return 0;
 }
 //------------------------------------------------------------------------------

@@ -14,6 +14,8 @@
 
 #include <SD.h>
 
+#define GOVIND_FILE_WRITE_ON 0
+
 /* for debugging file open/close leaks 
    uint8_t nfilecount=0;*/
 
@@ -59,11 +61,17 @@ boolean File::isDirectory(void) {
 
 
 size_t File::write(uint8_t val) {
+#if (GOVIND_FILE_WRITE_ON ==1)
   return write(&val, 1);
+  #else
+  return(0);
+  #endif
 }
 
 size_t File::write(const uint8_t *buf, size_t size) {
+	
   size_t t;
+#if (GOVIND_FILE_WRITE_ON ==1)
   if (!_file) {
     setWriteError();
     return 0;
@@ -74,6 +82,7 @@ size_t File::write(const uint8_t *buf, size_t size) {
     setWriteError();
     return 0;
   }
+  #endif
   return t;
 }
 
