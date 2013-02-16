@@ -1,0 +1,8 @@
+To make a color icon monochrome using GIMP
+
+1. Open the image in gimp
+2. Goto Color>Colourize and set the lightness to the lowest value. This will give you a BW monochrome image
+2. If you want to channge the background, create a new GIMP image with background = White or whatever
+3. Copy the colourized image onto the blank canvass, Color>invert it if required
+4. Scale it to the proper size
+5. Export to the proper format
