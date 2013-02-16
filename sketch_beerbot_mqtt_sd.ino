@@ -1,28 +1,35 @@
 
 /*
-                      Description: INO for beerbot task #1 in Basecamp.
-                      Hardware: Arduino Leonardo
-		      Shields: WiFi Shield for Arduino	
-                      Author: Govind Mukundan (govind.mukundan at gmail.com)
-                      Date: 19/Jan/2013
-                      Version: 1.1
-                      References: MQTT -> Library from http://knolleary.net/arduino-client-for-mqtt/
-                      History:
-                                1.1: First Version, tested at home without Bot
+ Description: INO for beerbot task #1 in Basecamp.
+ Hardware: Arduino Leonardo
+ Shields: WiFi Shield for Arduino	
+ Author: Govind Mukundan (govind.mukundan at gmail.com)
+ Date: 16/Feb/2013
+ Version: 1.2
+ References: MQTT -> Library from http://knolleary.net/arduino-client-for-mqtt/
+ History:
+ 
+ 1.2: 
+ Now supports WEP/WPA/OPEN networks.
+ Will ignore \r and \n characters on the ssid.txt and pwd.txt
+ Disabled Writes in SD library via switch GOVIND_FILE_WRITE_ON to increase code space
+ Fixed bug where vend pins were same as LED pins
+ 
+ 1.1: 
+ First Version, tested at home without Bot
  
  */
 #include <SD.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <EEPROM.h>
-#include <avr/pgmspace.h>
 
-#define DEBUGGING (0)  // make 0 before release
+#define DEBUGGING (1)  // make 0 before release
 // GPIO defs
 #define SD_CS_PIN    (4) // SD SS is pin 4 on the wifi sheild
 #define WiFi_CS_PIN    (10) 
-#define LED_PIN      (13) // On board LED at pin13 (L)
-#define LED_INTERNET_ON  (12)
+#define LED_PIN      (8) // On board LED at pin13 (L)
+#define LED_INTERNET_ON  (7)
 
 #define C_APPROVAL_ID_LEN    (20)
 #define API_KEY "8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g" // beerbot Cosm API key
@@ -140,12 +147,12 @@ void beerBotInit(void)
   // put your setup code here, to run once:
   Serial.begin(9600);
   delay(5000); // A 5s delay 
-  #if (DEBUGGING == 1)
+#if (DEBUGGING == 1)
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
-  #endif
-  Serial.println("Starting BREERBOT");
+#endif
+  Serial.println("Starting BEERRBOT");
 
   // First check if WiFi shield is present, if its not there then there is nothing to do..
   if (WiFi.status() == WL_NO_SHIELD) {
@@ -169,13 +176,14 @@ void BeerBotTask(void)
     digitalWrite( LED_PIN , HIGH) ;
     digitalWrite( LED_INTERNET_ON , LOW) ;
     setBlinkRate(0);
-    status = WiFi.begin(ssid, keyIndex, key);
+    WiFiConnectToNetwork();
     while ( (status != WL_CONNECTED)) {
       // wait 10 seconds for connection:
       delay(10000);
       Serial.print("Connecting to");
       Serial.println(ssid);
-      status = WiFi.begin(ssid, keyIndex, key);
+      // status = WiFi.begin(ssid, keyIndex, key);
+      WiFiConnectToNetwork();
     }
     // Status: WiFi COnnected
     digitalWrite( LED_PIN , HIGH) ;
@@ -205,7 +213,7 @@ void BeerBotTask(void)
 
       Serial.println("Subs to feed");
       if(true== client.subscribe(COSM_SUBSCRIBE_STRING)){
-        
+
         CosmState = CosmSubscribed;
         Serial.print("OK");
         Serial.println(COSM_SUBSCRIBE_STRING);
@@ -240,6 +248,47 @@ void BeerBotTask(void)
 
 }
 
+void WiFiConnectToNetwork(void)
+// This function finds the network encryption type and issues the appropriate library call
+{
+  status = WL_IDLE_STATUS;
+  byte i= 0;
+  byte numSsid = WiFi.scanNetworks(); // Find the total number of networks
+  // Loop through all the networks, find the index of the one with the configured SSID
+  // Then find the encryption type of that index, and make the correct begin() call
+  // Get the encryption type of the newtork
+  for(i=0; i<numSsid; i++)
+  {
+    Serial.println(WiFi.SSID(i));
+    if(strncmp(WiFi.SSID(i),ssid,strlen(ssid)) == 0)
+    {
+      Serial.println(F("Matching SSID found"));
+      byte enc = WiFi.encryptionType(i); 
+      switch(enc)
+      {
+      case 2: //WPA
+
+      case 4: //WPA
+        Serial.println(F("WPA Detected"));
+        status = WiFi.begin(ssid, key); 
+        break;
+
+      case 5:
+        Serial.println(F("WEP Detected"));
+        status = WiFi.begin(ssid, keyIndex, key);
+        break;
+
+      case 7: // OPEN network
+        Serial.println(F("OPEN n/w"));
+        status = WiFi.begin(ssid);
+        break;
+      }
+      break;
+    }
+  }
+
+}
+
 // Callback from the MQTT library
 void callback(char* topic, byte* payload, unsigned int length) {
   // handle message arrived
@@ -253,37 +302,37 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
   // If the new approval ID is not the same as the old one, write it into EEPROM and vend a beer
   if(IgnoreFeedCount < C_INITIAL_FEEDS_TO_IGNORE){
-    Serial.println("Ignore first 2 msg");
+    Serial.println("Ignore");
     IgnoreFeedCount++;
     return;
   }
 
   boolean approval = false;
-  if((length <= C_APPROVAL_ID_LEN) && (LastApprovalIdLen <= length)) // Epoch is always increasing, new length must be greater than or equal to old length
-  {
-    // Compare values
-    if(compareArrays((char*)LastApprovalId,(char*)payload,length) == false)
-      approval = true;// values are different, approve beer
+  // if((length <= C_APPROVAL_ID_LEN) && (LastApprovalIdLen <= length)) // Epoch is always increasing, new length must be greater than or equal to old length
+  // { // Removed this check to avoid unnecessary complexity !!
+  // Compare values
+  if(compareArrays((char*)LastApprovalId,(char*)payload,length) == false)
+    approval = true;// values are different, approve beer
 
-    if(approval){
-      Serial.println("Beer Approved!, Vending..");
-      vendBeer();
-      Serial.println("Writing ID into EEPROM");
-      // Store it into EEPROM
-      writeToEEPROM(C_EEPROM_APPROVALID_ADDRESS, (char*)payload, length);
-      writeToEEPROM(C_EEPROM_APPROVALID_SIZE_ADDRESS, (char*)&length, 1);
-      // Copying it into RAM for access in the current power cycle
-      memcpy ( LastApprovalId, payload, length );
-      client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,1");
-    }
-    else{
-      Serial.println("IDs are same, no beer for you");
-      client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,0");
-    }
-  } 
-  else{
-    Serial.println("ERROR>EpochTime");
+  if(approval){
+    Serial.println("Beer Approved!, Vending..");
+    vendBeer();
+    Serial.println("Writing ID into EEPROM");
+    // Store it into EEPROM
+    writeToEEPROM(C_EEPROM_APPROVALID_ADDRESS, (char*)payload, length);
+    writeToEEPROM(C_EEPROM_APPROVALID_SIZE_ADDRESS, (char*)&length, 1);
+    // Copying it into RAM for access in the current power cycle
+    memcpy ( LastApprovalId, payload, length );
+    //client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,1");
   }
+  else{
+    Serial.println("IDs are same, no beer for you");
+    //client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,0");
+  }
+  // } 
+  // else{
+  //   Serial.println("ERROR>EpochTime");
+  // }
 }
 
 boolean compareArrays(char* array1, char* array2, int length)
@@ -319,6 +368,7 @@ boolean vendBeer(void)
 
 
 void printWifiStatus() {
+
   // print the SSID of the network you're attached to:
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
@@ -333,6 +383,7 @@ void printWifiStatus() {
   Serial.print("RSSI:");
   Serial.print(rssi);
   Serial.println(" dBm");
+
 }
 
 void writeToEEPROM(int address, char* dataP, int len)
@@ -364,32 +415,34 @@ void loadConfigFromEEPROM(void)
   Serial.println("Reading cfg from EE");
 
   readFromEEPROM(C_EEPROM_SSID_SIZE_ADDRESS, &temp, 1);
+  Serial.print(temp, DEC);
   if(temp <= C_SSID_MAX_LEN)
   {
     readFromEEPROM( C_EEPROM_SSID_ADDRESS, ssid, temp ); 
-    Serial.println(" SSID:");
+    Serial.println("SSID:");
     Serial.write((uint8_t*)ssid,temp);
   }
   readFromEEPROM(C_EEPROM_NWKEY_SIZE_ADDRESS, &temp, 1);
+  Serial.print(temp, DEC);
   if(temp <= C_NWKEY_MAX_LEN)
   {
     readFromEEPROM( C_EEPROM_NWKEY_ADDRESS, key, temp ); 
-    Serial.println(" KEY:");
+    Serial.println("KEY:");
     Serial.write((uint8_t*)key,temp);
   }
 
-  Serial.println("Reading Last Approval ID from EEPROM");
+  Serial.println("Last Auth in EE");
   readFromEEPROM(C_EEPROM_APPROVALID_SIZE_ADDRESS, (char*)&LastApprovalIdLen, 1);
   if(LastApprovalIdLen <= C_APPROVAL_ID_LEN)
   {
     readFromEEPROM( C_EEPROM_APPROVALID_ADDRESS, (char*)&LastApprovalId[0], LastApprovalIdLen ); 
-    Serial.println("Old Approval ID:");
+    Serial.println("Old Auth:");
     Serial.write((uint8_t*)&LastApprovalId[0],LastApprovalIdLen);
   }
   else
   {
     LastApprovalIdLen = 0; // reset the old length, case when EEPROM is uninitialized
-    Serial.println("Reset Last Approval ID");
+    Serial.println("Reset Last Auth");
   } 
   LoadWiFiSSID();
 }
@@ -402,37 +455,39 @@ void LoadWiFiSSID(void)
   char siz;
   int i = 0;
   byte temp = 0;
-  Serial.println(freeRam()); 
+  //Serial.println(freeRam()); 
 
   // Disable wifi SS
   pinMode(WiFi_CS_PIN, OUTPUT);
   digitalWrite(WiFi_CS_PIN, HIGH);
   if (SD.begin(SD_CS_PIN)) {
     //Serial.println(" SD initialization failed!");
-    Serial.println("SD init done.");
+    Serial.println("SD init done");
     Serial.println(freeRam()); 
     // open the file. note that only one file can be open at a time,
     // so you have to close this one before opening another.
     myFile = SD.open("ssid.txt");
     if (myFile) {
       Serial.println("ssid:");
-
       // read from the file until there's nothing else in it:
       while ((myFile.available()) && ( i<C_SSID_MAX_LEN)) {
         temp = myFile.read();
+        if((temp != '\r') && (temp != '\n')) // Ignore CR and LF. Some text editors do now allow you to write a line without them..
+        {
         Serial.write(temp);
         ssidt[i++] = temp;
+        }
       }
       // close the file:
       myFile.close();
       // Compare with the value read from EEPROM and write it back if values are different OR if sizes are different
       readFromEEPROM(C_EEPROM_SSID_SIZE_ADDRESS, &siz, 1);
       if( (false == compareArrays(ssidt, ssid, i)) || (siz != i) ){
-        Serial.println("SSID is new, writing to EEPROM..");
+        Serial.println("SSID is new, writing to EE..");
         writeToEEPROM(C_EEPROM_SSID_ADDRESS, (char*)ssidt, i);
         writeToEEPROM(C_EEPROM_SSID_SIZE_ADDRESS, (char*)&i, 1); 
         // Clear the old key in RAM
-        for(temp = 0; temp<i; temp++)
+        for(temp = 0; temp<C_SSID_MAX_LEN; temp++)
           ssid[temp] = '\0';
         // Copy new ssid to Ram
         memcpy ( ssid, ssidt, i );
@@ -450,19 +505,21 @@ void LoadWiFiSSID(void)
       // read from the file until there's nothing else in it:
       while ((myFile.available()) && ( i<C_NWKEY_MAX_LEN)) {
         temp = myFile.read();
+        if((temp != '\r') && (temp != '\n')){
         Serial.write(temp);
         ssidt[i++] = temp;
+        }
       }
       // close the file:
       myFile.close();
       // Compare with the value read from EEPROM and write it back if values are different
       readFromEEPROM(C_EEPROM_NWKEY_SIZE_ADDRESS, &siz, 1);
       if( (false == compareArrays(ssidt, key, i)) || (siz != i) ){
-        Serial.println("SSID is new, writing to EEPROM..");
+        Serial.println("SSID is new, writing to EE..");
         writeToEEPROM(C_EEPROM_NWKEY_ADDRESS, (char*)ssidt, i);
         writeToEEPROM(C_EEPROM_NWKEY_SIZE_ADDRESS, (char*)&i, 1); 
         // Clear the old key in RAM
-        for(temp = 0; temp<i; temp++)
+        for(temp = 0; temp<C_NWKEY_MAX_LEN; temp++)
           key[temp] = '\0';
         // Copy new key to Ram
         memcpy ( key, ssidt, i );
@@ -476,7 +533,7 @@ void LoadWiFiSSID(void)
   } 
   else {
     // if the file didn't open, print an error:
-    Serial.println("SD Card is not available..");
+    Serial.println("SD Card is not present");
   }
 
 
@@ -517,6 +574,8 @@ int freeRam () {
   int v; 
   return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval); 
 }
+
+
 
 
 
