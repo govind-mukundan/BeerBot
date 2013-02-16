@@ -34,8 +34,7 @@
  In pwd.txt, store the pwd characters (no new line)
  
 [WiFi Limitations]
- 1. Currently supports only WEP networks.
- 2. open networks, WPA (eg iphone hot spot) does not work, but can be added via configuration files.
+Can't think of anything :)
   
 [Memory Optimization]
  The strings are stored in RAM by default, to mode to ROM use the PROGMEM directive.
