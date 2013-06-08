@@ -1,0 +1,5 @@
+-------- Hardware ---------
+--> Tested with default pinout on http://playground.arduino.cc/Code/GLCDks0108. See pinout A in the Table.
+--> Note that you have to connect a 10kPot to adjust contrast and pull the RESET line of the GLCD HIGH via a 100 ohm resistor.
+--> Bitmaps required were created using 64x64 pixel images and the BitmapConverter Tool in the GLCD library. Note that the converter
+    does not run properly in Ubuntu, so it's best to use Windows for it.

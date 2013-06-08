@@ -1,0 +1,100 @@
+--------- Hardware Notes: ----------
+ --> Shield used: https://www.sparkfun.com/products/9607
+ --> Power supply should be at least 5V, 2.5Ampere and must be given to the GSM Shield, NOT to the Arduino power jack.
+ --> Ardiono should be powered from the 5V pin on the shield
+ --> SMS Shield RESET and VIN lines should be connected to the Arduino Lines
+ --> The Leonardo uses the USB port as the serial port, so pins (0,1) are free to use for the GSM shield (Serial1).
+ --> However, the SMB Shield is by default configured to use pins (2,3) for UART, So you have to switch the Rx and Tx Jumpers on the board to use Serial1
+ Once thats done, the shield should work directly. If not, look at the Troubleshooting section below.
+ 
+------- AT Command Notes:---------
+[ Frequency band ]
+ --> The Frequency band of operation is stored in the SMB5100 non-volatile memory and so needs only to be set once. You can do that easily using the LoopBack INO and a serial port monitor. SBAND = 0 works for both SINGTEL and STARHUB SIMs
+ Singtel uses GSM Band 900, This can be configured using:
+ AT+SBAND=0\r\n
+
+ [ Status ]
+ After powering on the Arduino with the shield installed, verify that the module reads and recognizes the SIM card.
+ With a terimal window open and set to Arduino port and 9600 buad, power on the Arduino. The startup sequence should look something
+ like this:
+ 
+ Starting SM5100B Communication...
+ 
+ +SIND: 1
+ +SIND: 10,"SM",1,"FD",1,"LD",1,"MC",1,"RC",1,"ME",1
+ 
+ Communication with the module starts after the first line is displayed. The second line of communication, +SIND: 10, tells us if the module
+ can see a SIM card. If the SIM card is detected every other field is a 1; if the SIM card is not detected every other field is a 0.
+ 
+ 3.) Wait for a network connection before you start sending commands. After the +SIND: 10 response the module will automatically start trying
+ to connect to a network. Wait until you receive the following repsones:
+ 
+ +SIND: 11
+ +SIND: 3
+ +SIND: 4
+ 
+ The +SIND response from the cellular module tells the the modules status. Here's a quick run-down of the response meanings:
+ 0 SIM card removed
+ 1 SIM card inserted
+ 2 Ring melody
+ 3 AT module is partially ready
+ 4 AT module is totally ready
+ 5 ID of released calls
+ 6 Released call whose ID=<idx>
+ 7 The network service is available for an emergency call
+ 8 The network is lost
+ 9 Audio ON
+ 10 Show the status of each phonebook after init phrase
+ 11 Registered to network
+ 
+ --> AT+CFUN=1,1\r\n
+ This does a reset. It generates the SIND messages
+ 
+ After registering on the network you can begin interaction. Here are a few simple and useful commands to get started:
+ 
+ To make a call:
+ AT command - ATDxxxyyyzzzz
+ Phone number with the format: (xxx)yyy-zzz
+ 
+ If you make a phone call make sure to reference the devices datasheet to hook up a microphone and speaker to the shield.
+ 
+ To send a txt message:
+ AT command - AT+CMGF=1
+ This command sets the text message mode to 'text.'
+ AT command = AT+CMGS="xxxyyyzzzz"(carriage return)'Text to send'(CTRL+Z)
+ This command is slightly confusing to describe. The phone number, in the format (xxx)yyy-zzzz goes inside double quotations. Press 'enter' after closing the quotations.
+ Next enter the text to be send. End the AT command by sending CTRL+Z (0x1A in ASCII)
+ 
+ [ Receiving SMS ]
+ 
+ AT+CMGF=1
+ Which sets the SMS mode to text. The second command is:
+ 
+ AT+CNMI=3,3,0,0
+ 
+ This command tells the GSM module to immediately send any new SMS data to the serial out.
+ 
+ AT+CMGD=1,4 --> Deletes ALL SMSes
+ 
+ [ Read All/New SMS ]
+ AT+CMGF=1
+ AT+CMGL="ALL"
+ 
+ ---- Sent.ly API -----
+ To send an SMS via Sent.ly using HTTP,
+ 1. Create an account
+ 2. Register an android phone
+ 3. Log into the phone app
+ 4. Use the foll HTTP GET syntax 
+ https://sent.ly/command/sendsms?username=sent_ly_uname&password=sent_ly_pwd&to=%2b6596376447&text=%23AC:1360604509%26
+ 
+ --> The sender number will be the android phone runnung sent.ly
+ --> %23AC:1360604509%26, 0x23 and 0x26 are # and & in ASCII (URL Encoding) 
+ --> Note that the App on the phone MUST be running in order for the SMSes to be sent, if not you will get an error code "ERROR 3" on the browser
+
+ ----- Troubleshooting ------------
+---> While testing I discovered a problem with StarHub SIM, the SMB does not seem to recognise its presence unless the SIM is pressed down strongly. In such a scenario, you won't get any SIND messages from the module other that +SIND: 0 initially after power up. Since this message
+is usually generated during the Bootloader time of the arduino, it may be missed and it will seem like you are not getting any message at all.
+So the best thing to do is force reset the SMB after boot-up of the arduino by sending "AT+CFUN=1,1\r\n"
+---> In case of other problems, best way to know what is happening is to load the loopback INO and interact with the SMB via a terminal emulator.
+

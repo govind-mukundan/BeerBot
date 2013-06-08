@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="88">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="U8glib">
+      <df name="utility">
+        <in>chessengine.c</in>
+        <in>u8g.h</in>
+        <in>u8g_bitmap.c</in>
+        <in>u8g_circle.c</in>
+        <in>u8g_clip.c</in>
+        <in>u8g_com_api.c</in>
+        <in>u8g_com_api_16gr.c</in>
+        <in>u8g_com_arduino_common.c</in>
+        <in>u8g_com_arduino_fast_parallel.c</in>
+        <in>u8g_com_arduino_hw_spi.c</in>
+        <in>u8g_com_arduino_no_en_parallel.c</in>
+        <in>u8g_com_arduino_parallel.c</in>
+        <in>u8g_com_arduino_port_d_wr.c</in>
+        <in>u8g_com_arduino_ssd_i2c.c</in>
+        <in>u8g_com_arduino_st7920_hw_spi.c</in>
+        <in>u8g_com_arduino_st7920_spi.c</in>
+        <in>u8g_com_arduino_std_sw_spi.c</in>
+        <in>u8g_com_arduino_sw_spi.c</in>
+        <in>u8g_com_arduino_t6963.c</in>
+        <in>u8g_com_atmega_hw_spi.c</in>
+        <in>u8g_com_atmega_parallel.c</in>
+        <in>u8g_com_atmega_st7920_hw_spi.c</in>
+        <in>u8g_com_atmega_st7920_spi.c</in>
+        <in>u8g_com_atmega_sw_spi.c</in>
+        <in>u8g_com_i2c.c</in>
+        <in>u8g_com_io.c</in>
+        <in>u8g_com_null.c</in>
+        <in>u8g_cursor.c</in>
+        <in>u8g_delay.c</in>
+        <in>u8g_dev_flipdisc_2x7.c</in>
+        <in>u8g_dev_gprof.c</in>
+        <in>u8g_dev_ili9325d_320x240.c</in>
+        <in>u8g_dev_ks0108_128x64.c</in>
+        <in>u8g_dev_lc7981_160x80.c</in>
+        <in>u8g_dev_lc7981_240x128.c</in>
+        <in>u8g_dev_lc7981_240x64.c</in>
+        <in>u8g_dev_lc7981_320x64.c</in>
+        <in>u8g_dev_null.c</in>
+        <in>u8g_dev_pcd8544_84x48.c</in>
+        <in>u8g_dev_pcf8812_96x65.c</in>
+        <in>u8g_dev_sbn1661_122x32.c</in>
+        <in>u8g_dev_ssd1306_128x32.c</in>
+        <in>u8g_dev_ssd1306_128x64.c</in>
+        <in>u8g_dev_ssd1309_128x64.c</in>
+        <in>u8g_dev_ssd1322_nhd31oled_bw.c</in>
+        <in>u8g_dev_ssd1322_nhd31oled_gr.c</in>
+        <in>u8g_dev_ssd1325_nhd27oled_bw.c</in>
+        <in>u8g_dev_ssd1325_nhd27oled_bw_new.c</in>
+        <in>u8g_dev_ssd1325_nhd27oled_gr.c</in>
+        <in>u8g_dev_ssd1325_nhd27oled_gr_new.c</in>
+        <in>u8g_dev_ssd1327_96x96_gr.c</in>
+        <in>u8g_dev_st7565_64128n.c</in>
+        <in>u8g_dev_st7565_dogm128.c</in>
+        <in>u8g_dev_st7565_dogm132.c</in>
+        <in>u8g_dev_st7565_lm6059.c</in>
+        <in>u8g_dev_st7565_lm6063.c</in>
+        <in>u8g_dev_st7565_nhd_c12832.c</in>
+        <in>u8g_dev_st7565_nhd_c12864.c</in>
+        <in>u8g_dev_st7687_c144mvgd.c</in>
+        <in>u8g_dev_st7920_128x64.c</in>
+        <in>u8g_dev_st7920_192x32.c</in>
+        <in>u8g_dev_st7920_202x32.c</in>
+        <in>u8g_dev_t6963_128x64.c</in>
+        <in>u8g_dev_t6963_240x128.c</in>
+        <in>u8g_dev_t6963_240x64.c</in>
+        <in>u8g_dev_tls8204_84x48.c</in>
+        <in>u8g_dev_uc1610_dogxl160.c</in>
+        <in>u8g_dev_uc1701_dogs102.c</in>
+        <in>u8g_dev_uc1701_mini12864.c</in>
+        <in>u8g_ellipse.c</in>
+        <in>u8g_font.c</in>
+        <in>u8g_font_data.c</in>
+        <in>u8g_line.c</in>
+        <in>u8g_ll_api.c</in>
+        <in>u8g_page.c</in>
+        <in>u8g_pb.c</in>
+        <in>u8g_pb14v1.c</in>
+        <in>u8g_pb16h1.c</in>
+        <in>u8g_pb16h2.c</in>
+        <in>u8g_pb16v1.c</in>
+        <in>u8g_pb16v2.c</in>
+        <in>u8g_pb32h1.c</in>
+        <in>u8g_pb8h1.c</in>
+        <in>u8g_pb8h1f.c</in>
+        <in>u8g_pb8h2.c</in>
+        <in>u8g_pb8h8.c</in>
+        <in>u8g_pb8v1.c</in>
+        <in>u8g_pb8v2.c</in>
+        <in>u8g_rect.c</in>
+        <in>u8g_rot.c</in>
+        <in>u8g_scale.c</in>
+        <in>u8g_state.c</in>
+        <in>u8g_u16toa.c</in>
+        <in>u8g_u8toa.c</in>
+        <in>u8g_virtual_screen.c</in>
+      </df>
+      <in>U8glib.cpp</in>
+      <in>U8glib.h</in>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>INSTALL.TXT</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>INSTALL.TXT</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f INSTALL.TXT</buildCommand>
+          <cleanCommand>${MAKE} -f INSTALL.TXT clean</cleanCommand>
+          <executablePath></executablePath>
+        </makeTool>
+      </makefileType>
+      <item path="U8glib.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
+      </item>
+      <item path="U8glib.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utility/chessengine.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="utility/u8g_bitmap.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_circle.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_clip.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_api.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_api_16gr.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_common.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_fast_parallel.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_hw_spi.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_no_en_parallel.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_parallel.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_port_d_wr.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_ssd_i2c.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_st7920_hw_spi.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_st7920_spi.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_std_sw_spi.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_sw_spi.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_arduino_t6963.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_atmega_hw_spi.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_atmega_parallel.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_atmega_st7920_hw_spi.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_atmega_st7920_spi.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_atmega_sw_spi.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_i2c.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_io.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_com_null.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_cursor.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_delay.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_flipdisc_2x7.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_gprof.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ili9325d_320x240.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ks0108_128x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_lc7981_160x80.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_lc7981_240x128.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_lc7981_240x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_lc7981_320x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_null.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_pcd8544_84x48.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_pcf8812_96x65.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_sbn1661_122x32.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1306_128x32.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1306_128x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1309_128x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1322_nhd31oled_bw.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1322_nhd31oled_gr.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1325_nhd27oled_bw.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1325_nhd27oled_bw_new.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1325_nhd27oled_gr.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1325_nhd27oled_gr_new.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_ssd1327_96x96_gr.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_64128n.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_dogm128.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_dogm132.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_lm6059.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_lm6063.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_nhd_c12832.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7565_nhd_c12864.c"
+            ex="false"
+            tool="0"
+            flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7687_c144mvgd.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7920_128x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7920_192x32.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_st7920_202x32.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_t6963_128x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_t6963_240x128.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_t6963_240x64.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_tls8204_84x48.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_uc1610_dogxl160.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_uc1701_dogs102.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_dev_uc1701_mini12864.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_ellipse.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_font.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_font_data.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_line.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_ll_api.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_page.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb14v1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb16h1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb16h2.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb16v1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb16v2.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb32h1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8h1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8h1f.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8h2.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8h8.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8v1.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_pb8v2.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_rect.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_rot.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_scale.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_state.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_u16toa.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_u8toa.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+      <item path="utility/u8g_virtual_screen.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+        </cTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

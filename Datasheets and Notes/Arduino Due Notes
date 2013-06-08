@@ -1,0 +1,12 @@
+
+
+----- Differences from Leonardo ------
+1. 3.3V based, so you have to check compatibility of shileds. The shields should select the voltage level based on IOREF pin output.
+2. Has no in-build EEPROM
+3. It has two USB ports - Programming port and Native Port. For our pusposes its enough to use the Programming Port both for sketch upload and
+   Debug log output. The programming port is interfaced with the USB vla a USB to serial converter. It can be accessed in the sketch by using 	 the Serial class (just like the CDC class on the leonardo, but the advantage here is that when you reset the board, the serial connection  	 does not get reset) 
+4. SPI pins are no longer available from the Digital pins, but instead they are connected to the ICSP header in the middle of the board.
+   This doesnt matter for us since the WiFi shield board takes care of that.
+5. If the WiFi shield is not detected, short pins 7 and 3 together.
+
+6. The SMS shield can communicate with Serial1 on the Due (pins 18 and 19)
