@@ -1,15 +1,15 @@
 /*
 
-Description: GLCD Interface
-
-Author: Govind Mukundan (govind.mukundan at gmail.com)
-
-References:
-1. GLCD Display  -> http://www.adafruit.com/products/438
-2. u8glib Graphics Library -> http://code.google.com/p/u8glib/
-3. Convert Monochrome BMP to HEX -> http://www.digole.com/tools/PicturetoC_Hex_converter.php
-
-*/
+ Description: GLCD Interface
+ 
+ Author: Govind Mukundan (govind.mukundan at gmail.com)
+ 
+ References:
+ 1. GLCD Display  -> http://www.adafruit.com/products/438
+ 2. u8glib Graphics Library -> http://code.google.com/p/u8glib/
+ 3. Convert Monochrome BMP to HEX -> http://www.digole.com/tools/PicturetoC_Hex_converter.php
+ 
+ */
 
 #include "U8glib.h"
 #include "beer_icon.h"
@@ -17,9 +17,40 @@ References:
 #include "sync_icon.h"
 #include "error_icon.h"
 
+// RGB backlight using pins DAC0, DAC1 and 2
+#define C_RLED  2
+#define C_GLED  DAC0
+#define C_BLED  DAC1
+// Color table
+// Note: At the moment colors are not working prob because the default frequency of analogwrite() (500Hz) is too low
+// Need to access the PWM resisters directly..
+static const byte Colour_Table[8][3] =
+{
+  {0,255,255},//Red
+  {255,0,255},//Green
+  {255,255,0},//Blue
+  {0,0,0},//White
+  {0,204,255},//Orange
+  {0,0,255},//Yellow
+  {127,0,255},//Light Green
+  {0,204,51} //Pink
+};
+
+typedef enum{
+  Red,
+  Green,
+  Blue,
+  White,
+  Orange,
+  Yellow,
+  LightGreen,
+  Pink
+}e_Colours;
+
 #define BEERBOT_VERSION  1
 #define TIME_TEXT_DISP    5
 #define TIME_SPLASH_DISP    5000
+#define C_VENDING_SCREEN_TIMEOUT (10000)
 #define SPLASH_MSG1 " Maxus "
 #define SPLASH_MSG2 "MetalWorks"
 #define VEND_MSG1 "Please "
@@ -82,15 +113,18 @@ boolean ShowSpashScreen;
 #define COSM_Y	LINE4_Y
 
 
-
 U8GLIB_LM6059 u8g(13, 11, 10, 9);		// SPI Com: SCK = 13, MOSI = 11, CS = 10, A0 = 9
-
+void GLCDSetBkColor(e_Colours value);
 
 
 void GLCDInit(void)
 {
   // show splash screen
   ShowSpashScreen = true;
+  pinMode(C_RLED, OUTPUT);
+  pinMode(C_GLED, OUTPUT);
+  pinMode(C_BLED, OUTPUT); 
+  GLCDSetBkColor(Red);
 }
 
 void GLCDTask() {
@@ -137,7 +171,7 @@ void GLCDPictureLoop(void)
     if(DispState == DispVending){
       // After the screen is built, vend the beer and wait for some time
       vendBeer();
-      delay(5000);
+      delay(C_VENDING_SCREEN_TIMEOUT);
       DispState = DispReady;
     }
   }
@@ -150,6 +184,7 @@ void DispScreenUpdate(void)
   switch(DispState)
   {
   case DispConnecting:
+    GLCDSetBkColor(Blue);
     u8g.drawBitmap( 0, 0,SYNC_ICON_WIDTH/8 ,  SYNC_ICON_HEIGHT , sync_icon);
     u8g.setFont(FONT_SMALL);
     u8g.drawStr( LINE1_X, 10, CONNECT_MSG);
@@ -162,12 +197,14 @@ void DispScreenUpdate(void)
     break;
 
   case DispReady:
+    GLCDSetBkColor(Green);
     u8g.drawBitmap( 0, 0,BEER_ICON_WIDTH/8 ,  BEER_ICON_HEIGHT , beer_icon);
     Serial.println("GLCD:Ready..");
     updateDispStat = true;
     break;
 
   case DispVending:
+    GLCDSetBkColor(Blue);
     u8g.drawBitmap( 0, 0,EXP_ICON_WIDTH/8 ,  EXP_ICON_HEIGHT , exp_icon);
     Serial.println("GLCD:Vending..");
     u8g.setFont(FONT_SMALL);
@@ -180,6 +217,7 @@ void DispScreenUpdate(void)
     break;
 
   default:
+    GLCDSetBkColor(Red);
     u8g.drawBitmap( 0, 0,ERROR_ICON_WIDTH/8 ,  ERROR_ICON_HEIGHT , error_icon);
     Serial.println("GLCD:Error..");
     updateDispStat = true;
@@ -285,4 +323,13 @@ void spashScreen(void)
   //updateDispStatus(0,0); // Dummy update of status
   //DispScreenUpdate(); //Force the screen to update
 }
+
+void GLCDSetBkColor(e_Colours value)
+{
+  analogWrite(C_RLED, Colour_Table[value][0]);
+  analogWrite(C_GLED, Colour_Table[value][1]);
+  analogWrite(C_BLED, Colour_Table[value][2]); 
+  
+}
+
 

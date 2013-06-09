@@ -6,6 +6,14 @@
  Date: 8/Jun/2013
  Version: 2.1
  References: See individual file 
+ Installation Instructions:
+ 1. Write the SSID and PWD of the wifi n/w into two .txt files named ssid.txt and pwd.txt on to a micro SD card
+ 2. Place this sd card in the WiFi shiled.
+ 3. Load the sim card onto the gsm shield and mount both shields on Due
+ 4. Connect the GLCD
+ 5. Connect a 5V 2A+ supply to the GSM shield, tap the 3.3V out from the shield and connect to GLCD
+ 6. Turn ON and enjoy your beer. 
+ 7. To view log messages, connect the programming port of the Due to a terminal monitor. Baud rate is 9600bps.
  History:
  
  2.1
@@ -41,6 +49,7 @@ unsigned long blinkTimePeriod = 0;
 
 void setup() {
   // put your setup code here, to run once:
+  GLCDInit(); // Turn on the backlight first
   Serial.begin(9600);
   Serial1.begin(9600);
   delay(1000); // A 5s delay
@@ -48,12 +57,11 @@ void setup() {
 
   beerBotInit();
   SMSInit();
-  GLCDInit();
   digitalWrite(right, LOW);
   digitalWrite(left, LOW);
   pinMode(left, OUTPUT); //left
   pinMode(right, OUTPUT); //right
-    digitalWrite(right, LOW);
+  digitalWrite(right, LOW);
   digitalWrite(left, LOW);
   blinkTimeStamp = millis();
 }
@@ -115,7 +123,7 @@ boolean compareArrays(char* array1, char* array2, int length)
 boolean vendBeer(void)
 {
   Serial.println("Vending..");
-  
+
   if (vendside % 2) {
     digitalWrite(right, HIGH);
     delay(500); 
@@ -127,9 +135,10 @@ boolean vendBeer(void)
     delay(500); 
     digitalWrite(left, LOW);
   }
-   vendside++;
+  vendside++;
   return true;
 
 }
+
 
 

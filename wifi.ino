@@ -1,12 +1,17 @@
 /*
 Description: WiFi and Cosm interfacing using MQTT
-Author: Govind Mukundan (govind.mukundan at gmail.com)
-References:
-1. MQTT Library -> http://knolleary.net/arduino-client-for-mqtt/
-2. WiFi Shield  -> http://arduino.cc/en/Main/ArduinoWiFiShield
-3. COSM -> https://xively.com/
-*/
-
+ 
+ Author: Govind Mukundan (govind.mukundan at gmail.com)
+ 
+ References:
+ 1. MQTT Library -> http://knolleary.net/arduino-client-for-mqtt/
+ 2. WiFi Shield  -> http://arduino.cc/en/Main/ArduinoWiFiShield
+ 3. COSM -> https://xively.com/
+ 4. To update/subscribe to COSM feeds from a PC install mosquitto -> http://mosquitto.org/
+ eg: to publish:
+ mosquitto_pub -h api.cosm.com -u 8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g -t /v2/feeds/82941.csv -m "0,1358689826"
+ 
+ */
 
 
 #include <SPI.h>
@@ -21,14 +26,17 @@ References:
 #define SD_CS_PIN    (4) // SD SS is pin 4 on the wifi sheild
 #define WiFi_CS_PIN    (10) 
 
-#define C_APPROVAL_ID_LEN    (20)
+#define C_APPROVAL_ID_LEN    (30)
 #define API_KEY "8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g" // beerbot Cosm API key
 #define FEED_ID 82941 // beerbot Cosm feed ID
-#define COSM_SUBSCRIBE_STRING  "/v1/feeds/82941/datastreams/0.csv"
+#define COSM_SUBSCRIBE_STRING  "/v1/feeds/82941/datastreams/0.csv" //You need to mention your channel here
+#define C_RESPONSE_FEED    "8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv" //reply on this stream
+#define C_RESPONSE_OK       "2,PASS" //channel.value
+#define C_RESPONSE_NOK      "2,FAIL"
 #define C_INITIAL_FEEDS_TO_IGNORE  (0)
 #define C_SERVER "api.xively.com"
-#define C_SSID_MAX_LEN      (20)
-#define C_NWKEY_MAX_LEN      (30)
+#define C_SSID_MAX_LEN      (40)
+#define C_NWKEY_MAX_LEN      (40)
 #define C_AUTH_FILE_NAME    "auth.txt"
 
 
@@ -49,10 +57,10 @@ CosmStates;
 // State Variables
 WiFiStates WiFiState;
 CosmStates CosmState;
-byte IgnoreFeedCount;
+boolean IgnoreFeed;
 File myFile;
 
-// EEPROM copy
+// RAM copy
 char LastApprovalId[C_APPROVAL_ID_LEN];
 char ssid[C_SSID_MAX_LEN];
 char key[C_NWKEY_MAX_LEN]; 
@@ -71,9 +79,11 @@ int status = WL_IDLE_STATUS;                     // the Wifi radio's status
 
 
 // Due to some unknown bug in Cosm?? the arduino does not receive data when Cosm feed is updated, except on reconnect.
+// Update: Seems like migrating to Xively has fixed this and the double update issue (phew!)
 #define FORCE_RECONNECT_TO_COSM  0
 unsigned long lastConnectionTime = 0;                // last time we connected to Cosm
 const unsigned long connectionInterval = 60000;   // reconnect every 1min
+
 // APIs
 PubSubClient client(C_SERVER, 1883, callback, wifiClient); // MQTT client
 
@@ -98,7 +108,7 @@ void beerBotInit(void)
   } 
   // The SD card access should be done before turning on the WiFi module..
   loadConfigFromSD();
-  
+
 }
 
 
@@ -158,12 +168,10 @@ void BeerBotTask(void)
 
       Serial.println("Subs to feed");
       if(true== client.subscribe(COSM_SUBSCRIBE_STRING)){
-
         CosmState = CosmSubscribed;
         Serial.print("OK");
         Serial.println(COSM_SUBSCRIBE_STRING);
         updateDispStatus(STATUS_COSM,1);
-        IgnoreFeedCount = 0; // reset the ignore counter
         setBlinkRate(3); // Status: Cosm COnnected
         digitalWrite( LED_PIN , HIGH) ;
         digitalWrite( LED_INTERNET_ON , LOW) ;
@@ -179,6 +187,7 @@ void BeerBotTask(void)
       if(!client.loop()){
         CosmState = CosmDisconnected;
         Serial.println("Error:Cosm>Disconn");
+        Serial.println("Loop Disconnected");
         updateDispStatus(STATUS_COSM,0);
         GLCDNotifyError();
       }
@@ -211,6 +220,7 @@ void BeerBotTask(void)
   if((CosmState != CosmDisconnected) && (!client.connected())){
     CosmState = CosmDisconnected;
     Serial.println("Error:Cosm>Disconn");
+    Serial.println("Client Disconnected");
     GLCDNotifyError();
     updateDispStatus(STATUS_COSM,0);
   }
@@ -269,12 +279,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.write(payload,length);
   Serial.println(" ");
 
-  // If the new approval ID is not the same as the old one, write it into EEPROM and vend a beer
-  if(IgnoreFeedCount < C_INITIAL_FEEDS_TO_IGNORE){
-    Serial.println("Ignore");
-    IgnoreFeedCount++;
-    return;
-  }
+  // Whenever you connect to COSM, it will send you the last value of the feed.
+  // This should not trigger a vend when the bot is set up for the first time.
 
   boolean approval = false;
 
@@ -283,18 +289,31 @@ void callback(char* topic, byte* payload, unsigned int length) {
     approval = true;// values are different, approve beer
 
   if(approval){
-    Serial.println("Beer Approved!, Vending..");
-    GLCDVendBeer();
-    Serial.println("Writing ID into SD Card");
-    // Store it into SD
-    writeToAuthSD((uint8_t*)payload,length);
-    // Copying it into RAM for access in the current power cycle
-    memcpy ( LastApprovalId, payload, length );
-    client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,PASS");
+    if(IgnoreFeed == true){
+      Serial.println("Virgin:Ignoring Feed Update");
+      IgnoreFeed = false;
+      Serial.println("Writing ID into SD Card");
+      // Store it into SD
+      writeToAuthSD((uint8_t*)payload,length);
+      // Copying it into RAM for access in the current power cycle
+      memcpy ( LastApprovalId, payload, length );
+      client.publish(C_RESPONSE_FEED,C_RESPONSE_NOK);
+    }
+    else
+    {
+      Serial.println("Beer Approved!, Vending..");
+      GLCDVendBeer();
+      Serial.println("Writing ID into SD Card");
+      // Store it into SD
+      writeToAuthSD((uint8_t*)payload,length);
+      // Copying it into RAM for access in the current power cycle
+      memcpy ( LastApprovalId, payload, length );
+      client.publish(C_RESPONSE_FEED,C_RESPONSE_OK);
+    }
   }
   else{
     Serial.println("IDs are same, no beer for you");
-    client.publish("8dlRt66vQY2YrpGuwOM97cC5rsSSAKxpL0RvaUtZYkFSYz0g/v2/feeds/82941.csv","2,FAIL");
+    client.publish(C_RESPONSE_FEED,C_RESPONSE_NOK);
   }
 
 }
@@ -322,15 +341,9 @@ void loadConfigFromSD(void)
   char siz;
   int i = 0;
   byte temp = 0;
-  //Serial.println(freeRam()); 
 
-  // Disable wifi SS
-  //pinMode(WiFi_CS_PIN, OUTPUT);
-  //digitalWrite(WiFi_CS_PIN, HIGH);
   if (SD.begin(SD_CS_PIN)) {
-    //Serial.println(" SD initialization failed!");
     Serial.println("SD init done");
-    //Serial.println(freeRam()); 
     // open the file. note that only one file can be open at a time,
     // so you have to close this one before opening another.
     myFile = SD.open("ssid.txt");
@@ -377,8 +390,15 @@ void loadConfigFromSD(void)
 
     // Open Auth Code
     i = 0;
-    if(SD.exists(C_AUTH_FILE_NAME))
+    if(SD.exists(C_AUTH_FILE_NAME)){
       myFile = SD.open(C_AUTH_FILE_NAME);
+      IgnoreFeed = false;
+    }
+    else{
+      Serial.println("Auth code does not exist, this is virgin Beerbot");
+      Serial.println("We will ignore the first Auth message from COSM");
+      IgnoreFeed = true;
+    }
     if (myFile) {
       Serial.println("Last Auth Code:");
       // read from the file until there's nothing else in it:
@@ -426,5 +446,7 @@ void printWifiStatus() {
   Serial.println(" dBm");
 
 }
+
+
 
 
