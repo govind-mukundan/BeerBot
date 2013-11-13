@@ -3,8 +3,8 @@ BeerBot
 
 BeerBot for Maxus.
 
-Hardware Components:
-====================
+##Hardware Components:
+
 Arduino Due / Leonardo
 
 Arduino WiFi Shield
@@ -15,8 +15,8 @@ Sparkfun GSM shield (https://www.sparkfun.com/products/9607)
 
 And a Vending Machine
 
-Software Libraries used:
-=======================
+##Software Libraries used:
+
 MQTT for Cosm/Xively -> http://knolleary.net/arduino-client-for-mqtt/
 
 u8glib Graphics Library -> http://code.google.com/p/u8glib/
