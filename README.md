@@ -1,7 +1,7 @@
 BeerBot
 =======
 
-BeerBot for Maxus.
+BeerBot for Maxus. An internet and/or SMS controlled vending machine. Internet communication uses Xively and the MQTT protocol
 
 ##Hardware Components:
 
